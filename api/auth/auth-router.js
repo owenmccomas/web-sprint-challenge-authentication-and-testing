@@ -48,7 +48,7 @@ router.post("/register", checkCredentials, uniqueUsername, (req, res, next) => {
   */
 });
 
-router.post("/login", checkCredentials, uniqueUsername, (req, res, next) => {
+router.post("/login", checkCredentials, usernameExists, (req, res, next) => {
   const credentials = req.body;
   const token = tokenizer(req.dbUser);
 
