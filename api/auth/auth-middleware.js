@@ -1,14 +1,15 @@
 const User = require("./auth-model");
 
-function checkCred(req, res, next) {
+function checkCredentials(req, res, next) {
   if (
-    !req.body.username ||
-    !req.body.username.trim() ||
-    !req.body.password ||
-    !req.body.password.trim()
+    !req.body.username || !req.body.username.trim() || !req.body.password || !req.body.password.trim()
   ) {
-    return next({ status: 400, message: "username and password required" });
-  }
+    return next(
+        res
+        .status(400)
+        .json({ message: 'username and password required' })
+    )
+  } else
 
   next();
 }
@@ -35,7 +36,7 @@ async function usernameExists(req, res, next) {
 }
 
 module.exports = {
-  checkCred,
+  checkCredentials,
   uniqueUsername,
   usernameExists,
 };

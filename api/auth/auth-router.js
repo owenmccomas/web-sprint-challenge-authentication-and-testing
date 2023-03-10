@@ -4,13 +4,13 @@ const User = require("./auth-model");
 const jwt = require("jsonwebtoken");
 const { BCRYPT_ROUNDS, JWT_SECRET } = require("../../config");
 const {
-  checkCred,
+  checkCredentials,
   uniqueUsername,
   usernameExists,
 } = require("./auth-middleware");
 
 
-router.post("/register", checkCred, uniqueUsername, (req, res, next) => {
+router.post("/register", checkCredentials, uniqueUsername, (req, res, next) => {
   let user = req.body;
   const hash = bcrypt.hashSync(user.password, BCRYPT_ROUNDS);
   user.password = hash;
@@ -48,7 +48,7 @@ router.post("/register", checkCred, uniqueUsername, (req, res, next) => {
   */
 });
 
-router.post("/login", usernameExists, checkCred, (req, res, next) => {
+router.post("/login", checkCredentials, uniqueUsername, (req, res, next) => {
   const credentials = req.body;
   const token = tokenizer(req.dbUser);
 
