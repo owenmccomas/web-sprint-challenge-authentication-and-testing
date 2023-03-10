@@ -1,7 +1,26 @@
-const router = require('express').Router();
+const router = require("express").Router();
+const bcrypt = require("bcryptjs");
+const User = require("./auth-model");
+const jwt = require("jsonwebtoken");
+const { BCRYPT_ROUNDS, JWT_SECRET } = require("../../config");
+const {
+  checkCred,
+  uniqueUsername,
+  usernameExists,
+} = require("./auth-middleware");
 
-router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+
+router.post("/register", checkCred, uniqueUsername, (req, res, next) => {
+  let user = req.body;
+  const hash = bcrypt.hashSync(user.password, BCRYPT_ROUNDS);
+  user.password = hash;
+
+  User.add(user)
+    .then((saved) => {
+      res.status(201).json(saved);
+    })
+    .catch(next);
+
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -29,8 +48,29 @@ router.post('/register', (req, res) => {
   */
 });
 
-router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+router.post("/login", usernameExists, checkCred, (req, res, next) => {
+  const credentials = req.body;
+  const token = tokenizer(req.dbUser);
+
+  function tokenizer(user) {
+    const payload = {
+      subject: user.id,
+      username: user.username,
+    };
+    const options = {
+      expiresIn: "1d",
+    };
+    return jwt.sign(payload, JWT_SECRET, options);
+  }
+
+  if (!bcrypt.compareSync(credentials.password, req.dbUser.password)) {
+    return res.status(401).json({ error: "invalid credentials" });
+  } else next(
+      res
+      .status(200)
+      .json({ message: `welcome, ${credentials.username}`, token })
+  )
+  // the user is valid, continue on
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
